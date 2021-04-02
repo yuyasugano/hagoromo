@@ -82,6 +82,10 @@ contract HagoromoV1 is Ownable {
         );
     }
 
+    function getPropNonce() external view returns (uint) {
+        return propNonce;
+    }
+
     // token interface
     /**
      * @notice TransferFrom _numTokens ERC20 tokens to the app contract, granting funds
