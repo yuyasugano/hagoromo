@@ -1,18 +1,18 @@
 {
   "contractName": "SafeMath",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/home/ether/work/truffle/hagoromo/contracts/utils/SafeMath.sol\":\"SafeMath\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/ether/work/truffle/hagoromo/contracts/utils/SafeMath.sol\":{\"keccak256\":\"0x05191dc4399c9eebb470632a8919c1015944d814b849f652d17f553647773874\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d808963fda449701b215f6bf61ee17952cb7983695a453110ac5b8ab5a0cddf6\",\"dweb:/ipfs/QmdsJWpA2ZBf5FEuigaMPRkBmPcreR5qihKytwHxwrQfhH\"]}},\"version\":1}",
-  "bytecode": "0x60566023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220a1c5efc45412d93c6ead6a68e942e811ea08c9a5e668f01f00f33bfd5966276d64736f6c63430007060033",
-  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220a1c5efc45412d93c6ead6a68e942e811ea08c9a5e668f01f00f33bfd5966276d64736f6c63430007060033",
+  "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/macbook/Desktop/crypto/hagoromo/contracts/utils/SafeMath.sol\":\"SafeMath\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/macbook/Desktop/crypto/hagoromo/contracts/utils/SafeMath.sol\":{\"keccak256\":\"0x05191dc4399c9eebb470632a8919c1015944d814b849f652d17f553647773874\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d808963fda449701b215f6bf61ee17952cb7983695a453110ac5b8ab5a0cddf6\",\"dweb:/ipfs/QmdsJWpA2ZBf5FEuigaMPRkBmPcreR5qihKytwHxwrQfhH\"]}},\"version\":1}",
+  "bytecode": "0x60566023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122057253c61784e06bdef0341fd52bc34849baf64237433d070def01a680537eb5764736f6c63430007060033",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122057253c61784e06bdef0341fd52bc34849baf64237433d070def01a680537eb5764736f6c63430007060033",
   "immutableReferences": {},
   "generatedSources": [],
   "deployedGeneratedSources": [],
   "sourceMap": "66:3252:6:-:0;;;;;;;;;;;;;;;;;;;;;;;;;",
   "deployedSourceMap": "66:3252:6:-:0;;;;;;;;",
   "source": "// SPDX-License-Identifier: MIT\n\npragma solidity >=0.6.2 <0.8.0;\n\nlibrary SafeMath {\n    /**\n     * @dev Returns the addition of two unsigned integers, reverting on\n     * overflow.\n     *\n     * Counterpart to Solidity's `+` operator.\n     *\n     * Requirements:\n     *\n     * - Addition cannot overflow.\n     */\n    function add(uint256 a, uint256 b) internal pure returns (uint256) {\n        uint256 c = a + b;\n        require(c >= a, \"SafeMath: addition overflow\");\n\n        return c;\n    }\n\n    /**\n     * @dev Returns the subtraction of two unsigned integers, reverting on\n     * overflow (when the result is negative).\n     *\n     * Counterpart to Solidity's `-` operator.\n     *\n     * Requirements:\n     *\n     * - Subtraction cannot overflow.\n     */\n    function sub(uint256 a, uint256 b) internal pure returns (uint256) {\n        require(b <= a, \"SafeMath: subtraction overflow\");\n        uint256 c = a - b;\n\n        return c;\n    }\n\n    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {\n        require(b <= a, errorMessage);\n        uint256 c = a - b;\n\n        return c;\n    }\n\n    /**\n     * @dev Returns the multiplication of two unsigned integers, reverting on\n     * overflow.\n     *\n     * Counterpart to Solidity's `*` operator.\n     *\n     * Requirements:\n     *\n     * - Multiplication cannot overflow.\n     */\n    function mul(uint256 a, uint256 b) internal pure returns (uint256) {\n        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the\n        // benefit is lost if 'b' is also tested.\n        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522\n        if (a == 0) {\n            return 0;\n        }\n\n        uint256 c = a * b;\n        require(c / a == b, \"SafeMath: multiplication overflow\");\n\n        return c;\n    }\n\n    /**\n     * @dev Returns the integer division of two unsigned integers. Reverts on\n     * division by zero. The result is rounded towards zero.\n     *\n     * Counterpart to Solidity's `/` operator. Note: this function uses a\n     * `revert` opcode (which leaves remaining gas untouched) while Solidity\n     * uses an invalid opcode to revert (consuming all remaining gas).\n     *\n     * Requirements:\n     *\n     * - The divisor cannot be zero.\n     */\n    function div(uint256 a, uint256 b) internal pure returns (uint256) {\n        require(b > 0, \"SafeMath: division by zero\");\n        uint256 c = a / b;\n\n        return c;\n    }\n\n    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {\n        require(b > 0, errorMessage);\n        uint256 c = a / b;\n\n        return c;\n    }\n\n    /**\n     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),\n     * Reverts with custom message when dividing by zero.\n     *\n     * Counterpart to Solidity's `%` operator. This function uses a `revert`\n     * opcode (which leaves remaining gas untouched) while Solidity uses an\n     * invalid opcode to revert (consuming all remaining gas).\n     *\n     * Requirements:\n     *\n     * - The divisor cannot be zero.\n     */\n    function mod(uint256 a, uint256 b) internal pure returns (uint256) {\n        require(b != 0, \"SafeMath: modulo by zero\");\n        uint256 c = a % b;\n\n        return c;\n    }\n\n}\n",
-  "sourcePath": "/home/ether/work/truffle/hagoromo/contracts/utils/SafeMath.sol",
+  "sourcePath": "/Users/macbook/Desktop/crypto/hagoromo/contracts/utils/SafeMath.sol",
   "ast": {
-    "absolutePath": "/home/ether/work/truffle/hagoromo/contracts/utils/SafeMath.sol",
+    "absolutePath": "/Users/macbook/Desktop/crypto/hagoromo/contracts/utils/SafeMath.sol",
     "exportedSymbols": {
       "SafeMath": [
         1338
@@ -2452,7 +2452,7 @@
   },
   "legacyAST": {
     "attributes": {
-      "absolutePath": "/home/ether/work/truffle/hagoromo/contracts/utils/SafeMath.sol",
+      "absolutePath": "/Users/macbook/Desktop/crypto/hagoromo/contracts/utils/SafeMath.sol",
       "exportedSymbols": {
         "SafeMath": [
           1338
@@ -5076,7 +5076,7 @@
   },
   "networks": {},
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-03-22T11:11:52.824Z",
+  "updatedAt": "2021-03-31T11:29:47.518Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

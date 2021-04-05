@@ -232,5 +232,9 @@ contract HagoromoV1 is Ownable {
     function isExpired(uint _endDate) public view returns (bool expired) {
         return (block.timestamp >= _endDate);
     }
+
+function getPropNonce() external view returns (uint) {
+return propNonce;
 }
 
+}
