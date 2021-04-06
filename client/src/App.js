@@ -76,7 +76,7 @@ class App extends Component {
     }
     else{
       const num = new BigNumber(fundRights)
-      const res = await contract.methods.requestFundingRights(num.shiftedBy(18).toString()).call({from: accounts[0], gas: 1000000})
+      const res = await contract.methods.requestFundingRights(num.shiftedBy(18).toString()).send({from: accounts[0], gas: 1000000})
       console.log(res)
     }
   }
@@ -88,7 +88,7 @@ class App extends Component {
     }
     else{
       const num = new BigNumber(withFunds)
-      const res = await contract.methods.requestFundingRights(num.shiftedBy(18).toString()).call({from: accounts[0], gas: 1000000})
+      const res = await contract.methods.requestFundingRights(num.shiftedBy(18).toString()).send({from: accounts[0], gas: 1000000})
       console.log(res)
     }
 
@@ -115,7 +115,7 @@ class App extends Component {
     else{
       const num = new BigNumber(this.state.jpyc)
       const code = new BigNumber(index)
-      const res = await contract.methods.fundRaising(index,num.shiftedBy(18).toString()).call({from:accounts[0]})
+      const res = await contract.methods.fundRaising(index,num.shiftedBy(18).toString()).send({from:accounts[0]})
       this.getProposals()
     }
   }
