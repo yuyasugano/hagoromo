@@ -17,12 +17,14 @@ class App extends Component {
 
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
+
       const deployedNetwork = HagoromoContract.networks[networkId];
+      //console.log(`address: ${networkId}`)
       const instance = new web3.eth.Contract(
         HagoromoContract.abi,
         deployedNetwork && deployedNetwork.address,
       );
-      console.log(web3)
+      console.log(instance)
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
@@ -51,7 +53,9 @@ class App extends Component {
 
     const { accounts, contract } = this.state
     const num = new BigNumber(this.state.funds)
-    const tok = await contract.methods.initializeProposal(this.state.web3.utils.asciiToHex(this.state.desc), this.state.web3.utils.asciiToHex(this.state.url), this.state.duration.toString(), num.shiftedBy(18).toString()).send({
+    const dur = new BigNumber(this.state.duration)
+    const x = dur.multipliedBy(86400);
+    const tok = await contract.methods.initializeProposal(this.state.web3.utils.asciiToHex(this.state.desc), this.state.web3.utils.asciiToHex(this.state.url), x.toString(), num.shiftedBy(18).toString()).send({
       from:accounts[0]
     }) 
     
@@ -72,7 +76,7 @@ class App extends Component {
     }
     else{
       const num = new BigNumber(fundRights)
-      const res = await contract.methods.requestFundingRights(num.shiftedBy(18).toString()).send({from: accounts[0], gas: 1000000})
+      const res = await contract.methods.requestFundingRights(num.shiftedBy(18).toString()).call({from: accounts[0], gas: 1000000})
       console.log(res)
     }
   }
@@ -84,7 +88,7 @@ class App extends Component {
     }
     else{
       const num = new BigNumber(withFunds)
-      const res = await contract.methods.requestFundingRights(num.shiftedBy(18).toString()).send({from: accounts[0], gas: 1000000})
+      const res = await contract.methods.requestFundingRights(num.shiftedBy(18).toString()).call({from: accounts[0], gas: 1000000})
       console.log(res)
     }
 
