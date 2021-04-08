@@ -4,8 +4,9 @@ import getWeb3 from "./getWeb3";
 
 import "./App.css";
 import BigNumber from 'bignumber.js'
+import jpyc from './contracts/JPYC.json'
 class App extends Component {
-  state = { tokenBalance: 0, web3: null, accounts: null, contract: null,duration:'',url:'',funds:'',desc:'',propNonce:0,proposal:[],jpyc:0,fundRights:0,withFunds:0 };
+  state = {myContract:'', tokenBalance: 0, web3: null, accounts: null, contract: null,duration:'',url:'',funds:'',desc:'',propNonce:0,proposal:[],jpyc:0,fundRights:0,withFunds:0 };
 
   componentDidMount = async () => {
     try {
@@ -19,16 +20,22 @@ class App extends Component {
       const networkId = await web3.eth.net.getId();
 
       const deployedNetwork = HagoromoContract.networks[networkId];
-      //console.log(`address: ${networkId}`)
+      console.log(deployedNetwork.address)
       const instance = new web3.eth.Contract(
         HagoromoContract.abi,
         deployedNetwork && deployedNetwork.address,
       );
-      console.log(instance)
+
+      const myContract = await new web3.eth.Contract(
+        jpyc.abi,
+        '0xbD9c419003A36F187DAf1273FCe184e1341362C0'
+      )
+     
+      console.log(myContract.methods)
 
       // Set web3, accounts, and contract to the state, and then proceed with an
       // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, contract: instance }, this.runExample);
+      this.setState({ web3, accounts, contract: instance,myContract }, this.runExample);
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -39,13 +46,21 @@ class App extends Component {
   };
 
   runExample = async () => {
-    const { accounts, contract } = this.state;
+    const { accounts, contract, web3, myContract } = this.state;
+    var num = 0
+    const amount = new BigNumber(0.2)
     // Get the value from the contract to prove it worked.
-    const response = await contract.methods.tokenBalance().call();
+    const response = new BigNumber(await contract.methods.tokenBalance().call({from:accounts[0]}))
+    console.log(response.shiftedBy(-18).toString())
+    //const res = await myContract.methods.approve('0xf4119DdA50E6201093c057Af274874b7400060f3',amount.shiftedBy(18).toString()).send({from:accounts[0]})
     // const res = await contract.methods.init(accounts[0]).call()
     const nonce = await contract.methods.getPropNonce().call()
     // Update state with the result.
-    this.setState({ tokenBalance: response, propNonce:nonce });
+    await web3.eth.getBalance(accounts[0]).then((bal)=>{
+      num = bal/Math.pow(10,18)
+    })
+    console.log(num)
+    this.setState({ tokenBalance: response.shiftedBy(-18).toString(), propNonce:nonce });
     this.getProposals()
   };
 
@@ -78,6 +93,7 @@ class App extends Component {
       const num = new BigNumber(fundRights)
       const res = await contract.methods.requestFundingRights(num.shiftedBy(18).toString()).send({from: accounts[0], gas: 1000000})
       console.log(res)
+      this.runExample()
     }
   }
 
@@ -90,6 +106,7 @@ class App extends Component {
       const num = new BigNumber(withFunds)
       const res = await contract.methods.requestFundingRights(num.shiftedBy(18).toString()).send({from: accounts[0], gas: 1000000})
       console.log(res)
+      this.runExample()
     }
 
   }
@@ -115,7 +132,7 @@ class App extends Component {
     else{
       const num = new BigNumber(this.state.jpyc)
       const code = new BigNumber(index)
-      const res = await contract.methods.fundRaising(index,num.shiftedBy(18).toString()).send({from:accounts[0]})
+      const res = await contract.methods.fundRaising(index,num.shiftedBy(18).toString(),accounts[0]).send({from:accounts[0]})
       this.getProposals()
     }
   }
