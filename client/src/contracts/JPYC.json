@@ -1,4 +1,12 @@
 {
+  "networks": {
+    "4": {
+      "events": {},
+      "links": {},
+      "address": "0xbD9c419003A36F187DAf1273FCe184e1341362C0",
+      "transactionHash": "0xcb24ddc2d7e7387549ddd1706c86bf0ec7de7cc627976dd5e0c1b17a8ed2eb3d"
+    }
+  },
     "abi": [
       {
         "inputs": [],

@@ -4,19 +4,24 @@ import getWeb3 from "./getWeb3";
 
 import "./App.css";
 import BigNumber from 'bignumber.js';
-import jpyc from './contracts/JPYC.json';
+import jpycContract from './contracts/JPYC.json';
 
 class App extends Component {
+
   state = {
-    tokenBalance: 0,
     web3: null,
     accounts: null,
     contract: null,
+    contractAddress: null,
     contract2: null,
+    contract2Address: null,
     duration: '',
     url: '',
     funds: '',
     desc: '',
+    tokenBalance: 0,
+    allowance: 0,
+    approvedAmount: 0,
     propNonce: 0,
     proposal: [],
     jpyc: 0,
@@ -34,23 +39,26 @@ class App extends Component {
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
 
-      const deployedNetwork = HagoromoContract.networks[networkId];
-      // console.log(deployedNetwork.address)
+      const HagoromoNetwork = HagoromoContract.networks[networkId];
+      // console.log(HagoromoNetwork.address);
+
+      const jpycNetwork = jpycContract.networks[networkId];
+      // console.log(jpycNetwork.address);
 
       const instance = new web3.eth.Contract(
         HagoromoContract.abi,
-        deployedNetwork && deployedNetwork.address,
+        HagoromoNetwork && HagoromoNetwork.address,
       );
-      console.log(instance.methods);
+      // console.log(instance.methods);
 
       const instance2 = await new web3.eth.Contract(
-        jpyc.abi,
-        '0xbD9c419003A36F187DAf1273FCe184e1341362C0'
-      )
-      console.log(instance2.methods);
+        jpycContract.abi,
+        jpycNetwork && jpycNetwork.address,
+      );
+      // console.log(instance2.methods);
 
       // Set web3, accounts, jpyc and Hagoromo contract to the state firstly
-      this.setState({ web3, accounts, jpyc, contract: instance, contract2: instance2 }, this.runInitialization);
+      this.setState({ web3, accounts, jpyc: jpycContract, contract: instance, contract2: instance2, contractAddress: HagoromoNetwork.address, contract2Address: jpycNetwork.address }, this.getProposals);
 
     } catch (error) {
       // Catch any errors for any of the above operations.
@@ -59,36 +67,35 @@ class App extends Component {
       );
       console.error(error);
     }
-  };
+  }
 
-  runInitialization = async () => {
-    const { web3, accounts, contract, contract2 } = this.state;
-    // let num = 0;
-    // const amount = new BigNumber(0.2);
-
-    // Get the value from the contract to prove it worked.
-    const res = new BigNumber(await contract.methods.tokenBalance().call({ from:accounts[0] }));
-    const balance = res.shiftedBy(-18).toString();
-    // console.log(balance);
-
-    //const res = await contract2.methods.approve('0xf4119DdA50E6201093c057Af274874b7400060f3',amount.shiftedBy(18).toString()).send({from:accounts[0]})
-    // const res = await contract.methods.init(accounts[0]).call()
-
-    const nonce = await contract.methods.getPropNonce().call();
-    // await web3.eth.getBalance(accounts[0]).then((bal)=>{
-    //   num = bal/Math.pow(10,18)
-    // })
-
-    this.setState({ tokenBalance: balance, propNonce: nonce });
-    this.getProposals();
-  };
+  componentWillUnmount = async () => {
+  }
 
   createContract = async () => {
     const { accounts, contract } = this.state;
-    const funds = await new BigNumber(this.state.funds);
+    const funds = await new BigNumber(this.state.funds).shiftedBy(18).toFixed();
     const duration = await  new BigNumber(this.state.duration);
     const end = await duration.multipliedBy(86400);
-    const tok = await contract.methods.initializeProposal(this.state.web3.utils.asciiToHex(this.state.desc), this.state.web3.utils.asciiToHex(this.state.url), end.toString(), funds.shiftedBy(18).toString()).send({ from:accounts[0] });
+
+    const func = contract.methods.initializeProposal(
+      this.state.web3.utils.asciiToHex(this.state.desc),
+      this.state.web3.utils.asciiToHex(this.state.url),
+      end.toString(),
+      funds,
+    );
+    // const func = contract.methods.initializeProposal(this.state.desc, this.state.url, end.toString(), funds.shiftedBy(18).toString());
+    await func.estimateGas({ from: accounts[0] })
+    .then((gasAmount) => {
+      const res = func.send({ from:accounts[0], gas: gasAmount });
+    })
+    .catch((error) => {
+      alert(
+        `Failed to create a new proposal. Check console for details.`
+      );
+      console.error(error);
+    });
+
     const nonce = await contract.methods.getPropNonce().call();
 
     this.setState({ propNonce: nonce });
@@ -97,164 +104,217 @@ class App extends Component {
 
   reqFunds = async() => {
     const { contract, fundRights, accounts } = this.state;
-    if (fundRights <= 0) {
+    if (fundRights < 0) {
       alert("Enter a valid amount.");
     } else {
-      const funds = new BigNumber(fundRights);
-      await contract.methods.requestFundingRights(funds.shiftedBy(18).toString()).estimateGas({ from: accounts[0] })
+      const funds = new BigNumber(fundRights).shiftedBy(18).toFixed();
+      const func = contract.methods.requestFundingRights(funds)
+      await func.estimateGas({ from: accounts[0] })
       .then((gasAmount) => {
-        const res = contract.methods.requestFundingRights(funds.shiftedBy(18).toString()).send({ from: accounts[0], gas: gasAmount});
+        const res = func.send({ from: accounts[0], gas: gasAmount});
       })
       .catch((error) => {
         alert(
-          `Failed to load web3, accounts, or contract. Check console for details.`
+          `Failed to request funds. Check console for details.`
         );
         console.error(error);
       });
 
-      this.runInitialization();
+      this.getProposals();
     }
   }
 
   withFunds = async() => {
     const { contract, withFunds, accounts } = this.state;
-    if (withFunds <= 0) {
+    if (withFunds < 0) {
       alert("Enter a valid amount.");
     } else {
-      const funds= new BigNumber(withFunds);
-      await contract.methods.withdrawFundingRights(funds.shiftedBy(18).toString()).estimateGas({ from: accounts[0] })
+      const funds= new BigNumber(withFunds).shiftedBy(18).toFixed();
+      const func = contract.methods.withdrawFundingRights(funds);
+      await func.estimateGas({ from: accounts[0] })
       .then((gasAmount) => {
-        const res = contract.methods.withdrawFundingRights(funds.shiftedBy(18).toString()).send({from: accounts[0], gas: gasAmount});
+        const res = func.send({from: accounts[0], gas: gasAmount});
       })
       .catch((error) => {
         alert(
-          `Failed to load web3, accounts, or contract. Check console for details.`
+          `Failed to withdraw funds. Check console for details.`
         );
         console.error(error);
       });
 
-      this.runInitialization();
+      this.getProposals();
+    }
+  }
+
+  approveJPYC = async() => {
+    const { contract, contractAddress, contract2, contract2Address, approvedAmount, accounts } = this.state;
+    if (approvedAmount <= 0) { // zero means nothing
+      alert("Enter more than 1 JPYC.");
+    } else {
+      const amount = new BigNumber(approvedAmount).shiftedBy(18).toFixed();
+      const func = contract2.methods.approve(contractAddress, amount);
+      await func.estimateGas({ from: accounts[0] })
+      .then((gasAmount) => {
+        const res = func.send({from: accounts[0], gas: gasAmount});
+      })
+      .catch((error) => {
+        alert(
+          `Failed to approve amount. Check console for details.`
+        );
+        console.error(error);
+      });
+
+      this.getProposals();
     }
   }
 
   getProposals = async() => {
-    const { contract, propNonce, accounts } = this.state;
+    const { contract, contractAddress, contract2, contract2Address, propNonce, accounts } = this.state;
+
+    // Get the current nonce number
+    const nonce = await contract.methods.getPropNonce().call();
+    // console.log(nonce);
+
+    // Get the token balance for the caller from the contract
+    const res = new BigNumber(await contract.methods.tokenBalance().call({ from: accounts[0] }));
+    const balance = res.shiftedBy(-18).toString();
+    // console.log(balance);
+
+    // Get the allowance of the JPYC token for the caller
+    const ret = new BigNumber(await contract2.methods.allowance(accounts[0], contractAddress).call({ from: accounts[0] }));
+    const allowed = ret.shiftedBy(-18).toString();
+    // console.log(allowed);
+
     const arr = [];
-    for (let i=1; i<=propNonce; ++i) {
+    for (let i=1; i<=nonce; ++i) {
       const res = await contract.methods.getProposal(i).call();
       arr.push(res);
     }
-    // console.log(arr)
-    const res = new BigNumber(await contract.methods.tokenBalance().call({ from:accounts[0] }));
-    const balance = res.shiftedBy(-18).toString();
+    // console.log(arr);
 
-    this.setState({ proposal: arr, tokenBalance: balance });
+    this.setState({ proposal: arr, tokenBalance: balance, propNonce: nonce, allowance: allowed });
   }
 
   addFund = async(index) => {
-    const { web3, contract, accounts} = this.state;
-    if (this.state.jpyc <= 0) {
-      alert("Enter valid funding amount.");
+    const { web3, contract, accounts } = this.state;
+    if (this.state.jpyc < 0) {
+      alert("Enter more than 1 JPYC.");
     } else {
-      const jpyc = new BigNumber(this.state.jpyc);
-      const code = new BigNumber(index);
-      const res = await contract.methods.fundRaising(index, jpyc.shiftedBy(18).toString()).send({ from:accounts[0] });
+      const jpyc = new BigNumber(this.state.jpyc).shiftedBy(18).toFixed();
+      const func = contract.methods.fundRaising(index, jpyc);
+      await func.estimateGas({ from: accounts[0] })
+      .then((gasAmount) => {
+        const res = func.send({ from:accounts[0] });
+      })
+      .catch((error) => {
+        alert(
+          `Failed to add funds. Check console for details.`
+        );
+        console.error(error);
+      });
+
       this.getProposals();
     }
   }
 
   render() {
-    const {web3} = this.state;
+    const { web3 } = this.state;
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
     return (
       <div className="App">
-        <h1>Hagoromo Funding!</h1>
-        <h2>Test Example</h2>
+        <h1>はごろもファンディング -Rinkeby-</h1>
+        <h2>Welcome to Hagoromo Funding!</h2>
         <p>
-          If your contracts compiled and migrated successfully, below will show
-          a tokenBalance that was transferred to the contract.
+          1 JPYC = 1円で使用できる JPYC を使用したクラウドファンディングサイトです。<br />
+          分散型で誰でもプロジェクトの作成や、プロジェクトへのファンディングが行えます。
+        </p>
+        <p>
+          使い方はこちら。
         </p>
         <div>
-          Your account is: {this.state.accounts[0]}.
+          <p>
+            Your account is: {this.state.accounts[0]}.
+          </p>
         </div>
-        <div>Your tokenBalance is: {this.state.tokenBalance}</div>
         <div>
+          ファンディング可能額: {this.state.tokenBalance} JPYC
+        </div>
+        <div>
+          <p>
+            Approved JPYC: {this.state.allowance} JPYC
+          </p>
+          <input type="number" placeholder="JPYC" onChange={(e) => this.setState({ approvedAmount: e.target.value })} />
+          <button type="button" className="prbutton" onClick={() => {this.approveJPYC()}}>Approve JPYC</button>
+        </div>
 
-        <table className="tg" style={{ marginTop:'1%' }}>
-          <thead>
-            <tr>
-              <th className="tg-0lax"><input type="number" placeholder="JPYC" onChange={(e) => this.setState({ fundRights: e.target.value })}/></th>
-              <th className="tg-0lax" rowSpan="2">
-                <button type="button" className="prbutton" onClick={() => {this.reqFunds()}}>Request Fund Right</button>
-              </th>
-            </tr>
-          </thead>
-        </table>
+        <div>
+          <p>
+            <input type="number" placeholder="JPYC" onChange={(e) => this.setState({ fundRights: e.target.value })} />
+            <button type="button" className="prbutton" onClick={() => {this.reqFunds()}}>指定金額をはごろもに移す</button>
+          </p>
+          <p>
+            <input type="number" placeholder="JPYC" onChange={(e) => this.setState({ withFunds: e.target.value })} />
+            <button type="button" className="prbutton" onClick={() => {this.withFunds()}}>指定金額をはごろもから戻す</button>
+          </p>
+        </div>
 
-        <table className="tg" style={{marginTop:'1%'}}>
-          <thead>
-            <tr>
-              <th className="tg-0lax"><input type="number" placeholder="JPYC" onChange={(e) => this.setState({ withFunds: e.target.value })}/></th>
-              <th className="tg-0lax" rowSpan="2">
-                <button type="button" className="prbutton" onClick={() => {this.withFunds()}}>Withdraw Fund Right</button>
-              </th>
-            </tr>
-          </thead>
-        </table>
+        <div>
+          <h3>新しいプロジェクトを作成する</h3>
+          <table className="tg">
+            <thead>
+              <tr>
+                <th className="tg-0lax"><input placeholder="Description" onChange={(e) => this.setState({ desc: e.target.value })} /></th>
+                <th className="tg-0lax"><input placeholder="URL" onChange={(e) => this.setState({ url: e.target.value })} /></th>
+                <th className="tg-0lax" rowSpan="2">
+                  {
+                    this.state.desc==='' || this.state.url==='', this.state.funds==='' || this.state.duration===''?
+                    <button disabled={true} type="button" className="prbutton">入力してください</button>
+                      :
+                    <button type="button" className="prbutton" onClick={() => {this.createContract()}}>新規作成</button>
+                  }
+                </th>
+              </tr>
+              <tr>
+                <td className="tg-0lax"><input type="number" min={0} placeholder="Duration (in days)" onChange={(e) => this.setState({ duration: e.target.value })} /></td>
+                <td className="tg-0lax"><input type="number" min={0} placeholder="Target Funds (in JPYC)" onChange={(e) => this.setState({ funds: e.target.value })} /></td>
+              </tr>
+            </thead>
+          </table>
 
-        <h3 style={{textAlign:'left'}}>Create a proposal</h3>
-        <table className="tg">
-          <thead>
-            <tr>
-              <th className="tg-0lax"><input placeholder="Description" onChange={(e) => this.setState({ desc: e.target.value })}/></th>
-              <th className="tg-0lax"><input type="number" min={0} placeholder="Duration (In days)" onChange={(e) => this.setState({ duration: e.target.value })}/></th>
-              <th className="tg-0lax" rowSpan="2">
-                {
-                  this.state.desc==='' || this.state.url==='', this.state.funds==='' || this.state.duration===''?
-                  <button disabled={true} type="button" className="prbutton">Create a proposal</button>
-                    :
-                  <button type="button" className="prbutton" onClick={()=>{this.createContract()}}>Create a proposal</button>
-                }
-              </th>
-            </tr>
-            <tr>
-              <td className="tg-0lax"><input placeholder="URL" onChange={(e) => this.setState({ url: e.target.value })}/></td>
-              <td className="tg-0lax"><input type="number" min={0} placeholder="Target Funds" onChange={(e) => this.setState({funds: e.target.value })}/></td>
-            </tr>
-          </thead>
-        </table>
-
-        <h3 style={{textAlign:'left'}}>List Proposals</h3>
-          {
-            this.state.proposal.map((prop, index) => {
-              return(
-                <table class="tg2">
-                  <thead>
-                    <tr>
-                      <th class="tg2-ikqu">Description: { web3.utils.hexToAscii(prop['0']) }</th>
-                      <th class="tg2-ikqu">End Date: { new Date(prop['2']*1000).toString() }</th>
-                      <th class="tg2-ikqu"><input type="number" min={0} placeholder="JPYC" onChange={(e) => this.setState({ jpyc: e.target.value })}/></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td class="tg2-ikqu">Url: <a href={prop['1']}>{ web3.utils.hexToAscii(prop['1']) }</a></td>
-                      <td class="tg2-ikqu">Required Funds: { parseFloat(prop['4'], 10)/Math.pow(10, 18) } JPYC</td>
-                      <td class="tg2-ikqu">
-                        <button type="button" className="prbutton" onClick={() => {this.addFund(index+1)}}>Fund</button></td>
-                    </tr>
-                    <tr>
-                      <td class="tg2-ikqu">Raised Funds: { parseFloat(prop['3'], 10)/Math.pow(10, 18) } JPYC</td>
-                      <td class="tg2-ikqu">Status: { prop['5'] ? "Ended" : "Open" }</td>
-                      <td class="tg2-ikqu"></td>
-                    </tr>
-                  </tbody>
-                </table>
-              )
-            })
-          }
+          <h3>プロジェクトを支援する</h3>
+          <ul>
+            {
+              this.state.proposal.map((prop, index) => {
+                return (
+                  <li>
+                    <div>
+                      Description: { web3.utils.hexToAscii(prop['0']) }<br />
+                      Proposal URL: { web3.utils.hexToAscii(prop['1']) }<br />
+                      End Date: { new Date(prop['2']*1000).toString() }<br />
+                      Raised Funds: { parseFloat(prop['3'], 10)/Math.pow(10, 18) }<br />
+                      Required Funds: { parseFloat(prop['4'], 10)/Math.pow(10, 18) }<br />
+                      Status: { prop['5'] ? "Ended" : "Open" }<br /> 
+                      {prop['5'] === false &&
+                        <div>
+                          <input type="number" min={0} placeholder="JPYC" onChange={(e) => this.setState({ jpyc: e.target.value })} />
+                          <button type="button" className="prbutton" onClick={() => {this.addFund(index+1)}}>>支援する</button>
+                        </div>
+                      }
+                    </div>
+                    <div>
+                      {prop['5'] === true &&
+                        <div>
+                          The proposal has ended. Finalize the proposal or rescue your funds.
+                        </div>
+                      }
+                    </div>
+                  </li>
+                )
+              })
+            }
+          </ul>
         </div>
       </div>
     );
