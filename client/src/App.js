@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import Masonry from "react-masonry-css";
 import HagoromoContract from "./contracts/HagoromoV1.json";
 import getWeb3 from "./getWeb3";
 
@@ -259,6 +260,17 @@ class App extends Component {
     const limargin = {
       'margin-top': '20px'
     }
+    const footermargin = {
+      'margin-top': '30px',
+      'margin-bottom': '50px',
+      'display': 'inline-block'
+    }
+    const breakpointColumnsObj = {
+      'default': 3,
+      '1350': 3,
+      '1048': 2,
+      '576': 1,
+    }
 
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -326,11 +338,15 @@ class App extends Component {
           </table>
 
           <h3 style={h3margin}>プロジェクトを支援する</h3>
-          <ul>
+          <Masonry
+            breakpointCols={breakpointColumnsObj}
+            className="my-masonry-grid"
+            columnClassName="my-masonry-grid_column"
+          >
             {
               this.state.proposal.map((prop, index) => {
                 return (
-                  <li style={limargin}>
+                  <div className='event-card' style={limargin}>
                     <div>
                       プロジェクト概要: { web3.utils.hexToAscii(prop['0']) }<br />
                       プロジェクトURL: { web3.utils.hexToAscii(prop['1']) }<br />
@@ -354,12 +370,15 @@ class App extends Component {
                           <button type="button" className="prbutton" onClick={() => {this.resFunds(index+1)}}>支援を引き揚げる</button>
                       }
                     </div>
-                  </li>
+                  </div>
                 )
               })
             }
-          </ul>
+          </Masonry>
         </div>
+        <footer className='footer'>
+          <small style={footermargin}>&copy; 2021 HagoromoFunding</small>
+        </footer>
       </div>
     );
   }

@@ -32,7 +32,6 @@
   justify-self: center;
 }
 
-
 .tg2  {border-collapse:collapse;border-spacing:0;margin: auto; margin-top: 10%;border-color: #000000;
   border: 1px solid black;
   border-collapse: separate;
@@ -42,3 +41,26 @@
 .tg2 th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
   font-weight:normal;overflow:hidden;padding:12px 20px;word-break:normal;}
 .tg2 .tg2-ikqu{border-color:#ffffff;color:#000000;text-align:left;vertical-align:top}
+
+.header, .footer {
+  grid-column: 1 / -1;
+}
+
+.my-masonry-grid {
+  display: -webkit-box; /* Not needed if autoprefixing */
+  display: -ms-flexbox; /* Not needed if autoprefixing */
+  display: flex;
+  margin-left: -30px;
+  width: auto;
+}
+
+.my-masonry-gird_column {
+  padding-left: 30px;
+  background-clip: padding-box;
+}
+
+.my-masonry-grid_column > .event-card {
+  background: white;
+  margin-botoom: 30px;
+}
+
