@@ -241,4 +241,3 @@ contract HagoromoV1 is Ownable {
         selfdestruct(msg.sender);
     }
 }
-

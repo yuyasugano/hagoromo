@@ -20,3 +20,25 @@
 .App-link {
   color: #09d3ac;
 }
+
+.tg  {border-collapse:collapse;border-spacing:10;margin: auto;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-0lax{text-align:left;vertical-align:middle}
+.prbutton{
+  align-self: center;
+  justify-self: center;
+}
+
+
+.tg2  {border-collapse:collapse;border-spacing:0;margin: auto; margin-top: 10%;border-color: #000000;
+  border: 1px solid black;
+  border-collapse: separate;
+  border-spacing: 0;}
+.tg2 td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:12px 20px;word-break:normal;}
+.tg2 th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:12px 20px;word-break:normal;}
+.tg2 .tg2-ikqu{border-color:#ffffff;color:#000000;text-align:left;vertical-align:top}
