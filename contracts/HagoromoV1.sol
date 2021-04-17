@@ -13,7 +13,7 @@ contract HagoromoV1 is Ownable {
     using SafeMath for uint;
 
     // events
-    event _ProposalInitialized(bytes32 description, uint endDate, uint requiredFund, uint propNonce, address indexed creator);
+    event _ProposalInitialized(uint endDate, uint requiredFund, uint propNonce, address indexed creator);
     event _FundingRightsGranted(uint numTokens, address indexed fundRaiser);
     event _FundingRightsWithdrawn(uint numTokens, address indexed fundRaiser);
     event _FundRaising(uint propNonce, uint numTokens, address indexed fundRaiser);
@@ -22,8 +22,8 @@ contract HagoromoV1 is Ownable {
 
     // storage
     struct proposal {
-        bytes32 description; // short description (up to 32 bytes)
-        bytes32 url; // url for the project (up to 32 bytes)
+        string description; // short description (up to 32 bytes)
+        string url; // url for the project (up to 32 bytes)
         address beneficiary; // beneficiary address who creates a proposal
         uint endDate; // expiration date of the proposal
         uint raisedFund; // the total raised funds
@@ -62,8 +62,8 @@ contract HagoromoV1 is Ownable {
     }
 
     function getProposal(uint _propNonce) external view returns(
-        bytes32,
-        bytes32,
+        string memory,
+        string memory,
         uint,
         uint,
         uint,
@@ -207,7 +207,7 @@ contract HagoromoV1 is Ownable {
      * @param _duration Length of duration in seconds in addition to block.timestamp
      * @param _requiredFund Integer of the required funds for the proposal
      */
-    function initializeProposal(bytes32 _description, bytes32 _url, uint _duration, uint _requiredFund) public returns (uint) {
+    function initializeProposal(string memory _description, string memory _url, uint _duration, uint _requiredFund) public returns (uint) {
         propNonce = propNonce.add(1);
         address _beneficiary = msg.sender;
         uint _endDate = block.timestamp.add(_duration);
@@ -223,7 +223,7 @@ contract HagoromoV1 is Ownable {
             transferred: false
         });
 
-        emit _ProposalInitialized(_description, _endDate, _requiredFund, propNonce, msg.sender);
+        emit _ProposalInitialized(_endDate, _requiredFund, propNonce, msg.sender);
         return propNonce;
     }
 
