@@ -146,6 +146,40 @@ class App extends Component {
     }
   }
 
+  withTokens = async(index) => {
+    const { web3, contract, accounts } = this.state;
+    const func = contract.methods.withdrawTokens(index);
+    await func.estimateGas({ from: accounts[0] })
+    .then((gasAmount) => {
+      const res = func.send({from: accounts[0], gas: gasAmount});
+    })
+    .catch((error) => {
+      alert(
+        `Failed to withdraw tokens. Check console for details.`
+      );
+      console.error(error);
+    });
+
+    this.getProposals();
+  }
+
+  resFunds = async(index) => {
+    const { web3, contract, accounts } = this.state;
+    const func = contract.methods.rescueTokens(index);
+    await func.estimateGas({ from: accounts[0] })
+    .then((gasAmount) => {
+      const res = func.send({from: accounts[0], gas: gasAmount});
+    })
+    .catch((error) => {
+      alert(
+        `Failed to rescue tokens. Check console for details.`
+      );
+      console.error(error);
+    });
+
+    this.getProposals();
+  }
+
   approveJPYC = async() => {
     const { contract, contractAddress, contract2, contract2Address, approvedAmount, accounts } = this.state;
     if (approvedAmount <= 0) { // zero means nothing
@@ -219,10 +253,18 @@ class App extends Component {
 
   render() {
     const { web3 } = this.state;
+    const h3margin = {
+      'margin-top': '30px'
+    }
+    const limargin = {
+      'margin-top': '20px'
+    }
+
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
     }
     return (
+
       <div className="App">
         <h1>はごろもファンディング -Rinkeby-</h1>
         <h2>Welcome to Hagoromo Funding!</h2>
@@ -261,7 +303,7 @@ class App extends Component {
         </div>
 
         <div>
-          <h3>新しいプロジェクトを作成する</h3>
+          <h3 style={h3margin}>新しいプロジェクトを作成する</h3>
           <table className="tg">
             <thead>
               <tr>
@@ -283,31 +325,33 @@ class App extends Component {
             </thead>
           </table>
 
-          <h3>プロジェクトを支援する</h3>
+          <h3 style={h3margin}>プロジェクトを支援する</h3>
           <ul>
             {
               this.state.proposal.map((prop, index) => {
                 return (
-                  <li>
+                  <li style={limargin}>
                     <div>
-                      Description: { web3.utils.hexToAscii(prop['0']) }<br />
-                      Proposal URL: { web3.utils.hexToAscii(prop['1']) }<br />
-                      End Date: { new Date(prop['2']*1000).toString() }<br />
-                      Raised Funds: { parseFloat(prop['3'], 10)/Math.pow(10, 18) }<br />
-                      Required Funds: { parseFloat(prop['4'], 10)/Math.pow(10, 18) }<br />
-                      Status: { prop['5'] ? "Ended" : "Open" }<br /> 
-                      {prop['5'] === false &&
+                      プロジェクト概要: { web3.utils.hexToAscii(prop['0']) }<br />
+                      プロジェクトURL: { web3.utils.hexToAscii(prop['1']) }<br />
+                      支援締切日: { new Date(prop['2']*1000).toString() }<br />
+                      支援額: { parseFloat(prop['3'], 10)/Math.pow(10, 18) } JPYC<br />
+                      目標額: { parseFloat(prop['4'], 10)/Math.pow(10, 18) } JPYC<br />
+                      ステータス: { prop['5'] ? "達成" : "未達成" }<br />
+                      資金ステータス: { prop['6'] ? "Withdrawn" : "In place" }<br />
+                      {prop['5'] === false && (new Date() < new Date(prop['2']*1000)) &&
                         <div>
                           <input type="number" min={0} placeholder="JPYC" onChange={(e) => this.setState({ jpyc: e.target.value })} />
-                          <button type="button" className="prbutton" onClick={() => {this.addFund(index+1)}}>>支援する</button>
+                          <button type="button" className="prbutton" onClick={() => {this.addFund(index+1)}}>支援する</button>
                         </div>
                       }
                     </div>
                     <div>
-                      {prop['5'] === true &&
-                        <div>
-                          The proposal has ended. Finalize the proposal or rescue your funds.
-                        </div>
+                      {prop['5'] === true && prop['6'] === false && (new Date(prop['2']*1000) < new Date()) &&  
+                          <button type="button" className="prbutton" onClick={() => {this.withTokens(index+1)}}>プロジェクトを終了する</button>
+                      }
+                      {prop['5'] === false && prop['6'] === false && (new Date(prop['2']*1000) < new Date()) && 
+                          <button type="button" className="prbutton" onClick={() => {this.resFunds(index+1)}}>支援を引き揚げる</button>
                       }
                     </div>
                   </li>
