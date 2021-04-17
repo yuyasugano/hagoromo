@@ -6,13 +6,13 @@
  
 To know details about `JPYC`, visit https://jpyc.jp/white-paper-en.pdf
  
-`Hagoromo` is an exprimental project of decentralized crowdfunding written for Ethereum network, everyone can participate in each proposal as a proposal creator or a fundraiser. Crowdfunding is widely known as a form of crowdsourcing and alternative finance.
+`Hagoromo` is an open source exprimental project of decentralized crowdfunding written for Ethereum network, everyone can participate in each project as a proposal creator or a fundraiser. Crowdfunding is widely known as a form of crowdsourcing and alternative finance.
  
 To get insights about `Crowdfunding`, visit https://en.wikipedia.org/wiki/Crowdfunding
  
 ## HagoromoV1
  
-`HagoromoV1` has been prototyped with simple functions that were required to achieve features for decentralized crowdfunding. Details will come soon.  
+`HagoromoV1` has been prototyped with simple functions that were required to achieve features for decentralized crowdfunding. It is deployed at the address [0x4A2164a1a93d6CaD9cb2994962dc0EC25C1d8E9E][hagoromo] for Rinkeby test network. 
  
 ## Use of JPYC Rinkeby
  
@@ -35,3 +35,4 @@ $ truffle development
 ```
   
 [jpyc]: https://rinkeby.etherscan.io/address/0xbd9c419003a36f187daf1273fce184e1341362c0 "JPYC Rinkeby"
+[hagoromo]: https://rinkeby.etherscan.io/address/0x4A2164a1a93d6CaD9cb2994962dc0EC25C1d8E9E "HagoromoV1 Rinkeby"
