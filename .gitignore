@@ -6,7 +6,9 @@
 
 # Ignore build files.
 .env
+client/report.*
 client/node_modules/*
 client/node_modules/
 node_modules/*
 node_modules/
+.firebaserc
