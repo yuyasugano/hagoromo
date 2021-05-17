@@ -6,7 +6,7 @@
 
 # Ignore build files.
 .env
-client/report.*
+client/report.*.json
 client/node_modules/*
 client/node_modules/
 node_modules/*
