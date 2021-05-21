@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import Masonry from "react-masonry-css";
 import HagoromoContract from "./contracts/HagoromoV1.json";
 import getWeb3 from "./getWeb3";
 
@@ -21,6 +20,7 @@ class App extends Component {
     funds: '',
     desc: '',
     tokenBalance: 0,
+    jpycBalance: 0,
     allowance: 0,
     approvedAmount: 0,
     propNonce: 0,
@@ -64,13 +64,14 @@ class App extends Component {
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
-        `Failed to load web3, accounts, or contract. Check console for details.`,
+        `Failed to load... Confirm your wallet and it is connected to Rinkeby network. Check console for details.`
       );
       console.error(error);
     }
   }
 
   componentWillUnmount = async () => {
+    // empty
   }
 
   createContract = async () => {
@@ -80,8 +81,8 @@ class App extends Component {
     const end = await duration.multipliedBy(86400);
 
     const func = contract.methods.initializeProposal(
-      this.state.web3.utils.asciiToHex(this.state.desc),
-      this.state.web3.utils.asciiToHex(this.state.url),
+      this.state.web3.utils.utf8ToHex(this.state.desc),
+      this.state.web3.utils.utf8ToHex(this.state.url),
       end.toString(),
       funds,
     );
@@ -109,7 +110,7 @@ class App extends Component {
       alert("Enter a valid amount.");
     } else {
       const funds = new BigNumber(fundRights).shiftedBy(18).toFixed();
-      const func = contract.methods.requestFundingRights(funds)
+      const func = await contract.methods.requestFundingRights(funds);
       await func.estimateGas({ from: accounts[0] })
       .then((gasAmount) => {
         const res = func.send({ from: accounts[0], gas: gasAmount});
@@ -131,7 +132,7 @@ class App extends Component {
       alert("Enter a valid amount.");
     } else {
       const funds= new BigNumber(withFunds).shiftedBy(18).toFixed();
-      const func = contract.methods.withdrawFundingRights(funds);
+      const func = await contract.methods.withdrawFundingRights(funds);
       await func.estimateGas({ from: accounts[0] })
       .then((gasAmount) => {
         const res = func.send({from: accounts[0], gas: gasAmount});
@@ -182,9 +183,11 @@ class App extends Component {
   }
 
   approveJPYC = async() => {
-    const { contract, contractAddress, contract2, contract2Address, approvedAmount, accounts } = this.state;
+    const { contract, contractAddress, contract2, contract2Address, approvedAmount, accounts, jpycBalance } = this.state;
     if (approvedAmount <= 0) { // zero means nothing
       alert("Enter more than 1 JPYC.");
+    } else if (approvedAmount > jpycBalance) { // avoid an input more than JPYC balance
+      alert("Enter less than your JPYC balance");
     } else {
       const amount = new BigNumber(approvedAmount).shiftedBy(18).toFixed();
       const func = contract2.methods.approve(contractAddress, amount);
@@ -215,6 +218,11 @@ class App extends Component {
     const balance = res.shiftedBy(-18).toString();
     // console.log(balance);
 
+    // Get the jpyc balance for the caller from the contract
+    const jp = new BigNumber(await contract2.methods.balanceOf(accounts[0]).call({ from: accounts[0] }));
+    const jpyc = jp.shiftedBy(-18).toString();
+    // console.log(jpyc);
+
     // Get the allowance of the JPYC token for the caller
     const ret = new BigNumber(await contract2.methods.allowance(accounts[0], contractAddress).call({ from: accounts[0] }));
     const allowed = ret.shiftedBy(-18).toString();
@@ -227,7 +235,7 @@ class App extends Component {
     }
     // console.log(arr);
 
-    this.setState({ proposal: arr, tokenBalance: balance, propNonce: nonce, allowance: allowed });
+    this.setState({ proposal: arr, tokenBalance: balance, jpycBalance: jpyc, propNonce: nonce, allowance: allowed });
   }
 
   addFund = async(index) => {
@@ -254,23 +262,6 @@ class App extends Component {
 
   render() {
     const { web3 } = this.state;
-    const h3margin = {
-      'margin-top': '30px'
-    }
-    const limargin = {
-      'margin-top': '20px'
-    }
-    const footermargin = {
-      'margin-top': '30px',
-      'margin-bottom': '50px',
-      'display': 'inline-block'
-    }
-    const breakpointColumnsObj = {
-      'default': 3,
-      '1350': 3,
-      '1048': 2,
-      '576': 1,
-    }
 
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -278,106 +269,196 @@ class App extends Component {
     return (
 
       <div className="App">
-        <h1>はごろもファンディング -Rinkeby-</h1>
-        <h2>Welcome to Hagoromo Funding!</h2>
-        <p>
-          1 JPYC = 1円で使用できる JPYC を使用したクラウドファンディングサイトです。<br />
-          分散型で誰でもプロジェクトの作成や、プロジェクトへのファンディングが行えます。
-        </p>
-        <p>
-          使い方はこちら。
-        </p>
-        <div>
-          <p>
-            Your account is: {this.state.accounts[0]}.
-          </p>
-        </div>
-        <div>
-          ファンディング可能額: {this.state.tokenBalance} JPYC
-        </div>
-        <div>
-          <p>
-            Approved JPYC: {this.state.allowance} JPYC
-          </p>
-          <input type="number" placeholder="JPYC" onChange={(e) => this.setState({ approvedAmount: e.target.value })} />
-          <button type="button" className="prbutton" onClick={() => {this.approveJPYC()}}>Approve JPYC</button>
-        </div>
+        <header className="section_header">
+          <div className="header_left">
+            <img className="hagoromo_logo_header" src="img/logo_symbol.svg" alt="logo" />
+          </div>
+          <div className="header_right">
+            <div className="header_rinkeby">
+              <p className="header_rinkeby_p">Rinkeby</p>
+            </div>
+            <a className="header_help" href="https://yuyasugano.medium.com/jpyc-rinkeby-%E3%81%AE%E4%BD%BF%E3%81%84%E6%96%B9-ded2d16a7660" target="_blank" rel="noopener noreferrer">使い方</a>
+          </div>
+        </header>
 
-        <div>
-          <p>
-            <input type="number" placeholder="JPYC" onChange={(e) => this.setState({ fundRights: e.target.value })} />
-            <button type="button" className="prbutton" onClick={() => {this.reqFunds()}}>指定金額をはごろもに移す</button>
-          </p>
-          <p>
-            <input type="number" placeholder="JPYC" onChange={(e) => this.setState({ withFunds: e.target.value })} />
-            <button type="button" className="prbutton" onClick={() => {this.withFunds()}}>指定金額をはごろもから戻す</button>
-          </p>
-        </div>
+        <section className="section_title">
+          <h1 className="title_h1">
+            <img className="hagoromo_logo_h1" src="img/logo.svg" alt="はごろもファンディング" />
+          </h1>
+          <h2 className="title_h2">Welcome to Hagoromo Funding!</h2>
+          <p className="title_p">1 JPYC = 1円で使用できる JPYC を使用したクラウドファンディングサイトです。<br /> 分散型で誰でもプロジェクトの作成や、プロジェクトへのファンディングが行えます。</p>
+        </section>
 
-        <div>
-          <h3 style={h3margin}>新しいプロジェクトを作成する</h3>
-          <table className="tg">
-            <thead>
-              <tr>
-                <th className="tg-0lax"><input placeholder="Description" onChange={(e) => this.setState({ desc: e.target.value })} /></th>
-                <th className="tg-0lax"><input placeholder="URL" onChange={(e) => this.setState({ url: e.target.value })} /></th>
-                <th className="tg-0lax" rowSpan="2">
-                  {
-                    this.state.desc==='' || this.state.url==='', this.state.funds==='' || this.state.duration===''?
-                    <button disabled={true} type="button" className="prbutton">入力してください</button>
-                      :
-                    <button type="button" className="prbutton" onClick={() => {this.createContract()}}>新規作成</button>
-                  }
-                </th>
-              </tr>
-              <tr>
-                <td className="tg-0lax"><input type="number" min={0} placeholder="Duration (in days)" onChange={(e) => this.setState({ duration: e.target.value })} /></td>
-                <td className="tg-0lax"><input type="number" min={0} placeholder="Target Funds (in JPYC)" onChange={(e) => this.setState({ funds: e.target.value })} /></td>
-              </tr>
-            </thead>
-          </table>
+        <section className="section_deposit">
+          <div className="deposit_container">
+            <h2 className="h2_sectiontitle">JPYCをウォレットからはごろもに移す</h2>
+            <div className="deposit_adress_container">
+              <p className="deposit_adress_label">アカウント:</p>
+              <p className="deposit_adress">{ this.state.accounts[0] }</p>
+            </div>
+            <div className="input_container">
+              <div className="label_container">
+                <label for="name1">承認金額（JPYC）</label>
+                <p className="label_p">{ this.state.allowance }</p>
+              </div>
+              <div className="input_with_unit">
+                <input type="number" className="input_main no-spin" placeholder="0" onChange={(e) => this.setState({ approvedAmount: e.target.value })} />
+                <span className="input_unit">JPYC</span>
+              </div>
+              <button className="button_main" type="button" className="button_main" onClick={() => {this.approveJPYC()}}>許可する</button>
+            </div>
+            <div className="divider"></div>
+            <div className="deposit_swap_container">
+              <div className="input_container">
+                <div className="label_container">
+                  <label for="name1">ウォレット</label>
+                  <p className="label_p">{ this.state.jpycBalance }</p>
+                </div>
+                <div className="input_with_unit">
+                  <input type="number" className="input_main no-spin" placeholder="0" onChange={(e) => this.setState({ fundRights: e.target.value })} />
+                  <span className="input_unit">JPYC</span>
+                </div>
+                <button className="button_main" type="button" className="button_main" onClick={() => {this.reqFunds()}}>はごろもに移す</button>
+              </div>
+              <img className="deposit_swap_img" src="img/icon_sawp.svg" alt="arrow" width="24px" height="24px" />
+              <div className="input_container">
+                <div className="label_container">
+                  <label for="name1">はごろも</label>
+                  <p className="label_p">{ this.state.tokenBalance }</p>
+                </div>
+                <div className="input_with_unit">
+                  <input type="number" className="input_main no-spin" placeholder="0" onChange={(e) => this.setState({ withFunds: e.target.value })} />
+                  <span className="input_unit">JPYC</span>
+                </div>
+                  <button className="button_main" type="button" className="button_main" onClick={() => {this.withFunds()}}>ウォレットに戻す</button>
+              </div>
+            </div>
+            <p className="p_small">※支援を行うには、まずウォレットからはごろもにJPYCを移動する必要があります</p>
+          </div>
+        </section>
 
-          <h3 style={h3margin}>プロジェクトを支援する</h3>
-          <Masonry
-            breakpointCols={breakpointColumnsObj}
-            className="my-masonry-grid"
-            columnClassName="my-masonry-grid_column"
-          >
+        <section className="section_project-create">
+          <div className="project-create_container">
+            <h2 className="h2_sectiontitle">新しいプロジェクトを作成する</h2>
+            <div className="input_container">
+              <label for="name1">プロジェクト名</label>
+                <input type="text" className="input_main" placeholder="○○○プロジェクト" onChange={(e) => this.setState({ desc: e.target.value })} />
+            </div>
+            <div className="input_container">
+              <label for="name1">Webサイト</label>
+                <input type="text" className="input_main" placeholder="https://new-project.com" onChange={(e) => this.setState({ url: e.target.value })} />
+            </div>
+            <div className="input_container">
+              <label for="name1">支援締め切り期限</label>
+              <div className="input_with_unit">
+                <input type="number" className="input_main no-spin" placeholder="30" onChange={(e) => this.setState({ duration: e.target.value })} />
+                <span className="input_unit">日間</span>
+              </div>
+            </div>
+            <div className="input_container">
+              <label for="name1">目標金額</label>
+              <div className="input_with_unit">
+                <input type="number" className="input_main no-spin" placeholder="100000" onChange={(e) => this.setState({ funds: e.target.value })} />
+                <span class="input_unit">JPYC</span>
+              </div>
+            </div>
             {
-              this.state.proposal.map((prop, index) => {
-                return (
-                  <div className='event-card' style={limargin}>
-                    <div>
-                      プロジェクト概要: { web3.utils.hexToAscii(prop['0']) }<br />
-                      プロジェクトURL: { web3.utils.hexToAscii(prop['1']) }<br />
-                      支援締切日: { new Date(prop['2']*1000).toString() }<br />
-                      支援額: { parseFloat(prop['3'], 10)/Math.pow(10, 18) } JPYC<br />
-                      目標額: { parseFloat(prop['4'], 10)/Math.pow(10, 18) } JPYC<br />
-                      ステータス: { prop['5'] ? "達成" : "未達成" }<br />
-                      資金ステータス: { prop['6'] ? "Withdrawn" : "In place" }<br />
-                      {prop['5'] === false && (new Date() < new Date(prop['2']*1000)) &&
-                        <div>
-                          <input type="number" min={0} placeholder="JPYC" onChange={(e) => this.setState({ jpyc: e.target.value })} />
-                          <button type="button" className="prbutton" onClick={() => {this.addFund(index+1)}}>支援する</button>
-                        </div>
-                      }
+              this.state.desc === '' || this.state.url === '', this.state.funds === '' || this.state.duration === '' ?
+              <button disabled={true} type="button" className="button_main">情報を入力してください</button>
+                :
+              <button className="button_main" type="button" className="button_main" onClick={() => {this.createContract()}}>作成する</button>
+            }
+          </div>
+        </section>
+
+        <section className="section_project">
+          <h2 className="h2_sectiontitle">プロジェクトを支援する</h2>
+
+          <div className="project_container">
+          {
+            // keys are not identified for mapped items
+            this.state.proposal.map((prop, index) => {
+              return (
+                <div className="project_card">
+                  <div className="project_title_container">
+                    <h3 className="project_title">{ web3.utils.hexToUtf8(prop['0']) }</h3>
+                  </div>
+                  <div className="project_tag_container">
+                    <p className="tag_complete">{ prop['5'] ? "達成" : "未達成" }</p>
+                  </div>
+                  <div className="project_amount_container">
+                    <div className="amount_list">
+                      <h4 className="amountarea_title">支援総額</h4>
+                        <p className="amountarea_number">{ BigNumber(prop['3']).shiftedBy(-18).toString() } <span class="amountarea_unit">JPYC</span></p>
                     </div>
-                    <div>
-                      {prop['5'] === true && prop['6'] === false && (new Date(prop['2']*1000) < new Date()) &&  
-                          <button type="button" className="prbutton" onClick={() => {this.withTokens(index+1)}}>プロジェクトを終了する</button>
-                      }
-                      {prop['5'] === false && prop['6'] === false && (new Date(prop['2']*1000) < new Date()) && 
-                          <button type="button" className="prbutton" onClick={() => {this.resFunds(index+1)}}>支援を引き揚げる</button>
-                      }
+                    <div className="amount_slash">
+                      <p className="amount_slash_p">/</p>
+                    </div>
+                    <div className="amount_list color_sub">
+                      <h4 className="amountarea_title">目標額</h4>
+                      <p className="amountarea_number">{ BigNumber(prop['4']).shiftedBy(-18).toString() } <span class="amountarea_unit">JPYC</span></p>
                     </div>
                   </div>
-                )
-              })
-            }
-          </Masonry>
-        </div>
-        <footer className='footer'>
-          <small style={footermargin}>&copy; 2021 HagoromoFunding</small>
+                  <div className="project_detail_container">
+                    <table className="project_detail_table">
+                      <tr>
+                        <th>支援締切日</th>
+                        <td>{ new Date(prop['2']*1000).toString() } <span class="gmt_text"></span></td>
+                      </tr>
+                      <tr>
+                        <th>Webサイト</th>
+                        <td><a href={web3.utils.hexToUtf8(prop['1'])} target="_blank"
+                          rel="noopener noreferrer">{ web3.utils.hexToUtf8(prop['1']) }</a></td>
+                      </tr>
+                      <tr>
+                        <th>資金引き出し</th>
+                        <td>{ prop['6'] ? "引き出し" : "未引き出し" }</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  { prop['5'] === false && (new Date() < new Date(prop['2']*1000)) &&
+                  <div className="project_input_container">
+                    <div className="input_container">
+                      <div className="input_with_unit">
+                        <input type="number" className="input_main no-spin" placeholder="100000" onChange={(e) => this.setState({ jpyc: e.target.value })} />
+                            <span className="input_unit">JPYC</span>
+                        </div>
+                        <button className="button_main" onClick={() => {this.addFund(index+1)}}>支援する</button>
+                    </div>
+                  </div>
+                  }
+                  { prop['5'] === true && prop['6'] === false && (new Date(prop['2']*1000) < new Date()) &&
+                  <div className="project_input_container">
+                    <div className="input_container">
+                      <div className="input_with_unit">
+                        <button className="button_main" onClick={() => {this.withTokens(index+1)}}>プロジェクトを終了する</button>
+                      </div>
+                    </div>
+                  </div>
+                  }
+                  { prop['5'] === false && prop['6'] === false && (new Date(prop['2']*1000) < new Date()) &&
+                  <div className="project_input_container">
+                    <div className="input_container">
+                      <div className="input_with_unit">
+                        <button className="button_main" onClick={() => {this.resFunds(index+1)}}>支援を引き揚げる</button>
+                      </div>
+                    </div>
+                  </div>
+                  }
+                </div>
+              )
+            })
+          }
+
+          <div className="project_card_spacer"></div>
+          <div className="project_card_spacer"></div>
+          <div className="project_card_spacer"></div>
+          </div>
+        </section>
+
+        <footer className="section_footer">
+          <p className="footer_copy">&copy; 2021 HagoromoFunding</p>
         </footer>
       </div>
     );
