@@ -262,6 +262,9 @@ class App extends Component {
 
   render() {
     const { web3 } = this.state;
+    const projectDetailTable = {
+        'word-break': 'break-all'
+    }
 
     if (!this.state.web3) {
       return <div>Loading Web3, accounts, and contract...</div>;
@@ -277,7 +280,7 @@ class App extends Component {
             <div className="header_rinkeby">
               <p className="header_rinkeby_p">Rinkeby</p>
             </div>
-            <a className="header_help" href="https://yuyasugano.medium.com/jpyc-rinkeby-%E3%81%AE%E4%BD%BF%E3%81%84%E6%96%B9-ded2d16a7660" target="_blank" rel="noopener noreferrer">使い方</a>
+            <a className="header_help" href="https://yuyasugano.medium.com/%E3%81%AF%E3%81%94%E3%82%8D%E3%82%82%E3%83%95%E3%82%A1%E3%83%B3%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0-rinkeby-%E5%88%86%E6%95%A3%E5%9E%8B%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%89%E3%83%95%E3%82%A1%E3%83%B3%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0-25bb82ca6de8" target="_blank" rel="noopener noreferrer">はごろもの使い方</a>
           </div>
         </header>
 
@@ -396,11 +399,11 @@ class App extends Component {
                     </div>
                     <div className="amount_list color_sub">
                       <h4 className="amountarea_title">目標額</h4>
-                      <p className="amountarea_number">{ BigNumber(prop['4']).shiftedBy(-18).toString() } <span class="amountarea_unit">JPYC</span></p>
+                      <p className="amountarea_number">{ BigNumber(prop['4']).shiftedBy(-18).toString() } <span className="amountarea_unit">JPYC</span></p>
                     </div>
                   </div>
                   <div className="project_detail_container">
-                    <table className="project_detail_table">
+                    <table className="project_detail_table" style={projectDetailTable}>
                       <tr>
                         <th>支援締切日</th>
                         <td>{ new Date(prop['2']*1000).toString() } <span class="gmt_text"></span></td>
