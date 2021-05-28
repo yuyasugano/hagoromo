@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED 
+// SPDX-License-Identifier: MIT
 
 pragma solidity >=0.6.2 <0.8.0;
 pragma experimental ABIEncoderV2; 
@@ -43,7 +43,7 @@ contract HagoromoV1 is Ownable {
     IERC20 public token; // we use JPYC for Hagoromo application as of now
 
     /**
-     * @notice Initializer. This can only be called once.
+     * @notice Initializer. This can only be called once to initialize a token.
      * @param _token The address where the ERC20 token contract is deployed.
      */
     function init(address _token) external onlyOwner { // this function can be a constructor??
@@ -90,9 +90,10 @@ contract HagoromoV1 is Ownable {
     /**
      * @notice TransferFrom _numTokens ERC20 tokens to the app contract, granting funds
      * @dev Assumes that msg.sender has approved the app contract to spend on their behalf
-     * @param _numTokens The number of funds tokens desired in exchange for ERC20 tokens
+     * @param _numTokens The number of funds tokens desired in the contract for ERC20 tokens
      */
     function requestFundingRights(uint _numTokens) external returns (bool) {
+        require(_numTokens > 0, "Cannot request zero or less than zero balance");
         require(token.balanceOf(msg.sender) >= _numTokens, "Cannnot fund more than you have");
         _propTokenBalance[msg.sender] = _propTokenBalance[msg.sender].add(_numTokens);
 
@@ -105,12 +106,13 @@ contract HagoromoV1 is Ownable {
     }
 
     /**
-     * @notice Withdraw _numTokens ERC20 tokens from the app contract, revoking funds
-     * @dev Assume that the contract itself has had enough eth to call transfer function
+     * @notice Withdraw _numTokens ERC20 tokens from the app contract, removing funds
+     * @dev Assume that the contract itself has had enough gas to call transfer function
      * @param _numTokens The number of ERC20 tokens desired in the contract for ERC20 tokens
      */
     function withdrawFundingRights(uint _numTokens) external returns (bool) {
         // withdraw tokens only not locked should be available
+        require(_numTokens > 0, "Cannot withdraw zero or less than zero balance");
         require(_propTokenBalance[msg.sender] >= _numTokens, "Cannot withdraw more than used in proposals");
         _propTokenBalance[msg.sender] = _propTokenBalance[msg.sender].sub(_numTokens);
 
@@ -124,24 +126,30 @@ contract HagoromoV1 is Ownable {
 
     /**
      * @notice Withdraw funded ERC20 tokens from the contract if the proposal has ended
-     * @dev Assure that the proposal has ended and the funds reached the requirement
-     * @param _propNonce Integer of the target proposal that has been ended
+     * @dev Assure that the proposal has ended and the funds reached the requirement at least
+     * @param _propNonce Integer of the target proposal number that has been ended
      */
     function withdrawTokens(uint _propNonce) external returns (bool) {
         // this function can be called from non beneficiary address
         proposal storage p = _propMap[_propNonce];
 
-        require(isExpired(p.endDate), "fundraising has not ended yet");
+        // below can be commented out because the raised funds could be withdrawn before it has ended
+        // require(isExpired(p.endDate), "fundraising has not ended yet");
         require(p.status == true, "raised funds do not meet requirement");
+        // below can be commented out, so that anybody can invoke a withdrawal to the beneficiary address
+        // require(p.beneficiary == msg.sender, "Cannot withdraw the proposal if you are not the creator");
 
         // Withdraw tokens to the beneficiary address
         require(p.transferred == false, "funds have been withdrawn already");
         require(token.transfer(p.beneficiary, p.raisedFund));
         p.transferred = true;
-        p.raisedFund = 0;
+
+        // below can be commented out because the raised funds cannot be known after withrawal
+        // p.raisedFund = 0;
 
         // set zero all elements in p.pendingFunds mapping if possible, how?
         // or can we keep that funding status for tracking purpose with the proposal?
+        // implement here if needed
         emit _TokensWithdrawn(_propNonce, msg.sender);
 
         return true;
@@ -158,12 +166,16 @@ contract HagoromoV1 is Ownable {
 
         require(isExpired(p.endDate), "fundraising has not ended yet");
         require(p.status == false, "raised funds was sufficient");
+        // require(p.beneficiary != msg.sender, "Cannot rescue funds from self-generated proposal");
         // Revert the call if msg.sender did not fund anything on this proposal
         require(_pendingFunds[_propNonce][msg.sender] > 0, "No funds raised by sender");
 
         // Withdraw ERC20 tokens from the proposal to the funding rights
         _propTokenBalance[msg.sender] = _propTokenBalance[msg.sender].add(_pendingFunds[_propNonce][msg.sender]);
+        // subtract the raised fund of msg.sender from the fund pool
         p.raisedFund = p.raisedFund.sub(_pendingFunds[_propNonce][msg.sender]);
+
+        // set msg.sender's pending fund zero
         _pendingFunds[_propNonce][msg.sender] = 0;
 
         emit _TokensRescued(_propNonce, msg.sender);
@@ -176,22 +188,32 @@ contract HagoromoV1 is Ownable {
      * @notice Transfer funds ERC20 tokens from the funding rights to the proposal
      * @dev Assure that the proposal has not ended and sender has enough funding rights
      * @param _propNonce Integer of the target proposal that has been ended
-     * @param _funding Integer of the funding that the sender transfers
+     * @param _funding Integer of the funding that the sender wants to transfer
      */
     function fundRaising(uint _propNonce, uint _funding) external returns (bool) {
         proposal storage p = _propMap[_propNonce];
 
-        // Revert the call if the fundraising period is over
+        // Revert the call if the raised fund has reached the target amount
+        require(p.status != true, "funding has reached the goal already");
+
+        // Revert the call if the fundraising period has ended already
         require(!isExpired(p.endDate), "fundraising has ended already");
+
         require(p.beneficiary != msg.sender, "Cannot fund self-generated proposal");
         require(_propTokenBalance[msg.sender] >= _funding, "Not enough funds in funding rights");
+
+        // we can raise funds if the raised fund had reached the required fund if it hasn't ended yet
+        // therefore this require does not need to be implemented for now
+        // require(p.raisedFund < p.requiredFund, "accmulated funds must be less than the required amount");
 
         // raise funds, and substract the raised tokens from propTokenBalance
         p.raisedFund = p.raisedFund.add(_funding);
         _propTokenBalance[msg.sender] = _propTokenBalance[msg.sender].sub(_funding);
+
+        // add msg.sender's pending funds
         _pendingFunds[_propNonce][msg.sender] = _pendingFunds[_propNonce][msg.sender].add(_funding);
 
-        // set status true if raised fund reaches the requirement
+        // set status true if the raised fund has reached the requirement
         if (p.raisedFund >= p.requiredFund) {
             p.status = true;
         }
@@ -202,10 +224,10 @@ contract HagoromoV1 is Ownable {
 
     /**
      * @dev Initiates a proposal with canonical configured parameters at propNonce
-     * @param _description String of description of the proposal
-     * @param _url String of the proposal url that explains the project
-     * @param _duration Length of duration in seconds in addition to block.timestamp
-     * @param _requiredFund Integer of the required funds for the proposal
+     * @param _description String of the description of the proposal that explains the project
+     * @param _url String of the proposal url that has information of the project
+     * @param _duration Length of duration in seconds in addition to the current block.timestamp
+     * @param _requiredFund Integer of the required funds for the proposal in total
      */
     function initializeProposal(string memory _description, string memory _url, uint _duration, uint _requiredFund) public returns (uint) {
         propNonce = propNonce.add(1);
@@ -237,7 +259,8 @@ contract HagoromoV1 is Ownable {
         return (block.timestamp >= _endDate);
     }
 
-    function destruct() external onlyOwner {
-        selfdestruct(msg.sender);
-    }
+    // destruct function is not necessary for mainnet release
+    // function destruct() external onlyOwner {
+    //     selfdestruct(msg.sender);
+    // }
 }

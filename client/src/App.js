@@ -420,7 +420,7 @@ class App extends Component {
                     </table>
                   </div>
 
-                  { prop['5'] === false && (new Date() < new Date(prop['2']*1000)) &&
+                  { prop['5'] === false && prop['6'] === false && (new Date() < new Date(prop['2']*1000)) &&
                   <div className="project_input_container">
                     <div className="input_container">
                       <div className="input_with_unit">
@@ -431,7 +431,7 @@ class App extends Component {
                     </div>
                   </div>
                   }
-                  { prop['5'] === true && prop['6'] === false && (new Date(prop['2']*1000) < new Date()) &&
+                  { prop['5'] === true && prop['6'] === false &&
                   <div className="project_input_container">
                     <div className="input_container">
                       <div className="input_with_unit">
