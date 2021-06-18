@@ -53,8 +53,8 @@ class App extends Component {
   componentDidMount = async () => {
     this.RINKEBY_NETWORK_ID = 4;
     this.MATIC_NETWORK_ID = 137;
-    // this.DEFAULT_NETWORK_ID = this.MATIC_NETWORK_ID;
-    this.DEFAULT_NETWORK_ID = this.RINKEBY_NETWORK_ID;
+    this.DEFAULT_NETWORK_ID = this.MATIC_NETWORK_ID;
+    // this.DEFAULT_NETWORK_ID = this.RINKEBY_NETWORK_ID;
 
     let web3;
     try {
