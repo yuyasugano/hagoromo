@@ -6,6 +6,23 @@ import "./App.css";
 import BigNumber from 'bignumber.js';
 import jpycContract from './contracts/JPYC.json';
 
+const PARAMS = {
+  'RINKEBY': {
+    chainId: "0x4",
+  },
+  'MATIC': {
+    chainId: "0x89",
+    chainName: "Matic",
+    nativeCurrency: {
+      name: "Matic",
+      symbol: "MATIC",
+      decimals: 18,
+    },
+    rpcUrls: ["https://rpc-mainnet.matic.quiknode.pro"], // ['https://matic-mainnet.chainstacklabs.com/'],
+    blockExplorerUrls: ["https://explorer-mainnet.maticvigil.com"],
+  },
+};
+
 class App extends Component {
 
   state = {
@@ -36,7 +53,8 @@ class App extends Component {
   componentDidMount = async () => {
     this.RINKEBY_NETWORK_ID = 4;
     this.MATIC_NETWORK_ID = 137;
-    this.DEFAULT_NETWORK_ID = this.MATIC_NETWORK_ID;
+    // this.DEFAULT_NETWORK_ID = this.MATIC_NETWORK_ID;
+    this.DEFAULT_NETWORK_ID = this.RINKEBY_NETWORK_ID;
 
     let web3;
     try {
@@ -76,7 +94,7 @@ class App extends Component {
         return alert("Available Ethereum wallet was not found on your browser.");
       }
 
-      if(networkId !== this.DEFAULT_NETWORK_ID) return alert("invalid network. please switch to matic mainnet.");
+      if(networkId !== this.DEFAULT_NETWORK_ID) return this.switchNetwork();
     }
 
     this.setState({ accounts, networkId }, this.setInstances);
@@ -98,13 +116,40 @@ class App extends Component {
     let contractAddress;
     let contract2Address;
     try {
-      const contractAddress = HagoromoNetwork.address;
-      const contract2Address = jpycNetwork.address;
+      contractAddress = HagoromoNetwork.address;
+      contract2Address = jpycNetwork.address;
     } catch {
       return alert('ERROR: Network of the contract and defined DEFAULT_NETWORK_ID are different. Please contact to dev.');
     }
 
     this.setState({ contract: instance, contract2: instance2, contractAddress, contract2Address }, this.getProposals);
+  }
+
+  switchNetwork = async () => {
+    const { web3 } = this.state;
+    const getParams = () => {
+      switch(this.DEFAULT_NETWORK_ID) {
+        case (this.MATIC_NETWORK_ID): {
+          return {method: 'wallet_addEthereumChain', params: [PARAMS.MATIC]};
+        }
+        case (this.RINKEBY_NETWORK_ID): {
+          return {method: 'wallet_switchEthereumChain', params: [PARAMS.RINKEBY]};
+        }
+        default: throw new Error("Invalid Network is assigned to DEFAULT_NETWORK_ID");
+      }
+    };
+
+    const params = getParams();
+
+    try {
+      await window.ethereum.request(params)
+    } catch (e) {
+      console.error('Could not add Ethereum chain')
+    }
+
+    const accounts = await web3.eth.getAccounts();
+    const networkId = await web3.eth.net.getId();
+    this.setState({ accounts, networkId }, this.setInstances);
   }
 
   createContract = async () => {
@@ -315,7 +360,7 @@ class App extends Component {
       <div className="header_rinkeby" onClick={() => this.setUserInfo()}>
         <p className="header_rinkeby_p">{getNetwork()}</p>
       </div>
-    ) :  (
+    ) : (
       <div className="header_not_connected" onClick={() => this.setUserInfo()}>
         <p className="header_not_connected_p">Connect Wallet</p>
       </div>
