@@ -95,7 +95,16 @@ class App extends Component {
       jpycNetwork && jpycNetwork.address,
     );
 
-    this.setState({ contract: instance, contract2: instance2, contractAddress: HagoromoNetwork.address, contract2Address: jpycNetwork.address}, this.getProposals);
+    let contractAddress;
+    let contract2Address;
+    try {
+      const contractAddress = HagoromoNetwork.address;
+      const contract2Address = jpycNetwork.address;
+    } catch {
+      return alert('ERROR: Network of the contract and defined DEFAULT_NETWORK_ID are different. Please contact to dev.');
+    }
+
+    this.setState({ contract: instance, contract2: instance2, contractAddress, contract2Address }, this.getProposals);
   }
 
   createContract = async () => {
