@@ -27,51 +27,73 @@ class App extends Component {
     proposal: [],
     jpyc: 0,
     fundRights: 0,
-    withFunds: 0 };
+    withFunds: 0,
+    networkId: 0,
+    isInitialLoad: true,
+  };
+
 
   componentDidMount = async () => {
+    this.RINKEBY_NETWORK_ID = 4
+
+    let web3;
     try {
-      // Get network provider and web3 instance.
-      const web3 = await getWeb3();
-
-      // Use web3 to get the user's accounts.
-      const accounts = await web3.eth.getAccounts();
-
-      // Get the contract instance.
-      const networkId = await web3.eth.net.getId();
-
-      const HagoromoNetwork = HagoromoContract.networks[networkId];
-      // console.log(HagoromoNetwork.address);
-
-      const jpycNetwork = jpycContract.networks[networkId];
-      // console.log(jpycNetwork.address);
-
-      const instance = new web3.eth.Contract(
-        HagoromoContract.abi,
-        HagoromoNetwork && HagoromoNetwork.address,
-      );
-      // console.log(instance.methods);
-
-      const instance2 = await new web3.eth.Contract(
-        jpycContract.abi,
-        jpycNetwork && jpycNetwork.address,
-      );
-      // console.log(instance2.methods);
-
-      // Set web3, accounts, jpyc and Hagoromo contract to the state firstly
-      this.setState({ web3, accounts, jpyc: jpycContract, contract: instance, contract2: instance2, contractAddress: HagoromoNetwork.address, contract2Address: jpycNetwork.address }, this.getProposals);
-
-    } catch (error) {
-      // Catch any errors for any of the above operations.
-      alert(
-        `Failed to load... Confirm your wallet and it is connected to Rinkeby network. Check console for details.`
-      );
-      console.error(error);
+      web3 = await getWeb3();
+    } catch {
+      // A user does not signed up even though metamask is installed.
+      return this.setState({isInitialLoad: false})
     }
+
+    this.setState({ web3, jpyc: jpycContract }, this.setUserInfo);
   }
 
-  componentWillUnmount = async () => {
-    // empty
+  setUserInfo = async () => {
+    const { web3, isInitialLoad }= this.state
+
+    let networkId;
+    let accounts;
+
+    if(isInitialLoad) {
+      this.setState({isInitialLoad: false});
+
+      try {
+        accounts = await web3.eth.getAccounts();
+        networkId = await web3.eth.net.getId();
+      } catch (e) {
+        // Do nothing at the initial load.
+        return
+      }
+
+      // Do nothing at the initial load.
+      if(networkId !== this.RINKEBY_NETWORK_ID) return;
+    } else {
+      try {
+        accounts = await web3.eth.getAccounts();
+        networkId = await web3.eth.net.getId();
+      } catch (e) {
+        return alert("Available Ethereum wallet was not found on your browser.");
+      }
+
+      if(networkId !== this.RINKEBY_NETWORK_ID) return alert("invalid network. please switch to rinkeby network.");
+    }
+
+    this.setState({ accounts, networkId }, this.setInstances);
+  }
+
+  setInstances = () => {
+    const { web3, networkId } = this.state;
+    const HagoromoNetwork = HagoromoContract.networks[networkId];
+    const jpycNetwork = jpycContract.networks[networkId];
+    const instance = new web3.eth.Contract(
+      HagoromoContract.abi,
+      HagoromoNetwork && HagoromoNetwork.address,
+    );
+    const instance2 = new web3.eth.Contract(
+      jpycContract.abi,
+      jpycNetwork && jpycNetwork.address,
+    );
+
+    this.setState({ contract: instance, contract2: instance2, contractAddress: HagoromoNetwork.address, contract2Address: jpycNetwork.address}, this.getProposals);
   }
 
   createContract = async () => {
@@ -261,25 +283,29 @@ class App extends Component {
   }
 
   render() {
-    const { web3 } = this.state;
+    const { web3, networkId } = this.state;
     const projectDetailTable = {
         'word-break': 'break-all'
     }
 
-    if (!this.state.web3) {
-      return <div>Loading Web3, accounts, and contract...</div>;
-    }
-    return (
+    const networkButton = networkId === this.RINKEBY_NETWORK_ID ? (
+      <div className="header_rinkeby" onClick={() => this.setUserInfo()}>
+        <p className="header_rinkeby_p">Rinkeby</p>
+      </div>
+    ) :  (
+      <div className="header_not_connected" onClick={() => this.setUserInfo()}>
+        <p className="header_not_connected_p">Connect Wallet</p>
+      </div>
+    );
 
+    return (
       <div className="App">
         <header className="section_header">
           <div className="header_left">
             <img className="hagoromo_logo_header" src="img/logo_symbol.svg" alt="logo" />
           </div>
           <div className="header_right">
-            <div className="header_rinkeby">
-              <p className="header_rinkeby_p">Rinkeby</p>
-            </div>
+            {networkButton}
             <a className="header_help" href="https://yuyasugano.medium.com/%E3%81%AF%E3%81%94%E3%82%8D%E3%82%82%E3%83%95%E3%82%A1%E3%83%B3%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0-rinkeby-%E5%88%86%E6%95%A3%E5%9E%8B%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%89%E3%83%95%E3%82%A1%E3%83%B3%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0-25bb82ca6de8" target="_blank" rel="noopener noreferrer">はごろもの使い方</a>
           </div>
         </header>
@@ -297,7 +323,7 @@ class App extends Component {
             <h2 className="h2_sectiontitle">JPYCをウォレットからはごろもに移す</h2>
             <div className="deposit_adress_container">
               <p className="deposit_adress_label">アカウント:</p>
-              <p className="deposit_adress">{ this.state.accounts[0] }</p>
+              <p className="deposit_adress">{ this.state.accounts && this.state.accounts[0] }</p>
             </div>
             <div className="input_container">
               <div className="label_container">

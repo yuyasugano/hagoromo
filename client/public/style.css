@@ -164,6 +164,34 @@ input {
   align-items: center;
 }
 
+.header_not_connected {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 30px;
+  padding-left: 8px;
+  padding-right: 8px;
+  background-color: #eeeeee;
+  border: solid 1px #dddddd;
+  border-radius: 4px;
+}
+.header_not_connected:hover {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 30px;
+  padding-left: 8px;
+  padding-right: 8px;
+  background-color: #eeeeee;
+  border: solid 1px #aaaaaa;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.header_not_connected_p {
+  font-size: 14px;
+}
+
 .header_rinkeby {
   display: flex;
   justify-content: center;
