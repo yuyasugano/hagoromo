@@ -350,39 +350,39 @@ class App extends Component {
             </div>
             <div className="input_container">
               <div className="label_container">
-                <label for="name1">承認金額（JPYC）</label>
+                <label htmlFor="name1">承認金額（JPYC）</label>
                 <p className="label_p">{ this.state.allowance }</p>
               </div>
               <div className="input_with_unit">
                 <input type="number" className="input_main no-spin" placeholder="0" onChange={(e) => this.setState({ approvedAmount: e.target.value })} />
                 <span className="input_unit">JPYC</span>
               </div>
-              <button className="button_main" type="button" className="button_main" onClick={() => {this.approveJPYC()}}>許可する</button>
+              <button className="button_main" type="button" onClick={() => {this.approveJPYC()}}>許可する</button>
             </div>
             <div className="divider"></div>
             <div className="deposit_swap_container">
               <div className="input_container">
                 <div className="label_container">
-                  <label for="name1">ウォレット</label>
+                  <label htmlFor="name1">ウォレット</label>
                   <p className="label_p">{ this.state.jpycBalance }</p>
                 </div>
                 <div className="input_with_unit">
                   <input type="number" className="input_main no-spin" placeholder="0" onChange={(e) => this.setState({ fundRights: e.target.value })} />
                   <span className="input_unit">JPYC</span>
                 </div>
-                <button className="button_main" type="button" className="button_main" onClick={() => {this.reqFunds()}}>はごろもに移す</button>
+                <button className="button_main" type="button" onClick={() => {this.reqFunds()}}>はごろもに移す</button>
               </div>
               <img className="deposit_swap_img" src="img/icon_sawp.svg" alt="arrow" width="24px" height="24px" />
               <div className="input_container">
                 <div className="label_container">
-                  <label for="name1">はごろも</label>
+                  <label htmlFor="name1">はごろも</label>
                   <p className="label_p">{ this.state.tokenBalance }</p>
                 </div>
                 <div className="input_with_unit">
                   <input type="number" className="input_main no-spin" placeholder="0" onChange={(e) => this.setState({ withFunds: e.target.value })} />
                   <span className="input_unit">JPYC</span>
                 </div>
-                  <button className="button_main" type="button" className="button_main" onClick={() => {this.withFunds()}}>ウォレットに戻す</button>
+                  <button className="button_main" type="button" onClick={() => {this.withFunds()}}>ウォレットに戻す</button>
               </div>
             </div>
             <p className="p_small">※支援を行うには、まずウォレットからはごろもにJPYCを移動する必要があります</p>
@@ -393,32 +393,32 @@ class App extends Component {
           <div className="project-create_container">
             <h2 className="h2_sectiontitle">新しいプロジェクトを作成する</h2>
             <div className="input_container">
-              <label for="name1">プロジェクト名</label>
+              <label htmlFor="name1">プロジェクト名</label>
                 <input type="text" className="input_main" placeholder="○○○プロジェクト" onChange={(e) => this.setState({ desc: e.target.value })} />
             </div>
             <div className="input_container">
-              <label for="name1">Webサイト</label>
+              <label htmlFor="name1">Webサイト</label>
                 <input type="text" className="input_main" placeholder="https://new-project.com" onChange={(e) => this.setState({ url: e.target.value })} />
             </div>
             <div className="input_container">
-              <label for="name1">支援締め切り期限</label>
+              <label htmlFor="name1">支援締め切り期限</label>
               <div className="input_with_unit">
                 <input type="number" className="input_main no-spin" placeholder="30" onChange={(e) => this.setState({ duration: e.target.value })} />
                 <span className="input_unit">日間</span>
               </div>
             </div>
             <div className="input_container">
-              <label for="name1">目標金額</label>
+              <label htmlFor="name1">目標金額</label>
               <div className="input_with_unit">
                 <input type="number" className="input_main no-spin" placeholder="100000" onChange={(e) => this.setState({ funds: e.target.value })} />
-                <span class="input_unit">JPYC</span>
+                <span className="input_unit">JPYC</span>
               </div>
             </div>
             {
               this.state.desc === '' || this.state.url === '', this.state.funds === '' || this.state.duration === '' ?
               <button disabled={true} type="button" className="button_main">情報を入力してください</button>
                 :
-              <button className="button_main" type="button" className="button_main" onClick={() => {this.createContract()}}>作成する</button>
+              <button className="button_main" type="button" onClick={() => {this.createContract()}}>作成する</button>
             }
           </div>
         </section>
@@ -441,7 +441,7 @@ class App extends Component {
                   <div className="project_amount_container">
                     <div className="amount_list">
                       <h4 className="amountarea_title">支援総額</h4>
-                        <p className="amountarea_number">{ BigNumber(prop['3']).shiftedBy(-18).toString() } <span class="amountarea_unit">JPYC</span></p>
+                        <p className="amountarea_number">{ BigNumber(prop['3']).shiftedBy(-18).toString() } <span className="amountarea_unit">JPYC</span></p>
                     </div>
                     <div className="amount_slash">
                       <p className="amount_slash_p">/</p>
@@ -455,7 +455,7 @@ class App extends Component {
                     <table className="project_detail_table" style={projectDetailTable}>
                       <tr>
                         <th>支援締切日</th>
-                        <td>{ new Date(prop['2']*1000).toString() } <span class="gmt_text"></span></td>
+                        <td>{ new Date(prop['2']*1000).toString() } <span className="gmt_text"></span></td>
                       </tr>
                       <tr>
                         <th>Webサイト</th>
