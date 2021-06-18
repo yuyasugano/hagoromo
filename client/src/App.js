@@ -34,7 +34,9 @@ class App extends Component {
 
 
   componentDidMount = async () => {
-    this.RINKEBY_NETWORK_ID = 4
+    this.RINKEBY_NETWORK_ID = 4;
+    this.MATIC_NETWORK_ID = 137;
+    this.DEFAULT_NETWORK_ID = this.MATIC_NETWORK_ID;
 
     let web3;
     try {
@@ -65,7 +67,7 @@ class App extends Component {
       }
 
       // Do nothing at the initial load.
-      if(networkId !== this.RINKEBY_NETWORK_ID) return;
+      if(networkId !== this.DEFAULT_NETWORK_ID) return;
     } else {
       try {
         accounts = await web3.eth.getAccounts();
@@ -74,7 +76,7 @@ class App extends Component {
         return alert("Available Ethereum wallet was not found on your browser.");
       }
 
-      if(networkId !== this.RINKEBY_NETWORK_ID) return alert("invalid network. please switch to rinkeby network.");
+      if(networkId !== this.DEFAULT_NETWORK_ID) return alert("invalid network. please switch to matic mainnet.");
     }
 
     this.setState({ accounts, networkId }, this.setInstances);
@@ -288,9 +290,21 @@ class App extends Component {
         'word-break': 'break-all'
     }
 
-    const networkButton = networkId === this.RINKEBY_NETWORK_ID ? (
+    const getNetwork = () => {
+      switch(this.DEFAULT_NETWORK_ID) {
+        case(this.MATIC_NETWORK_ID): {
+          return 'Matic'
+        }
+        case(this.RINKEBY_NETWORK_ID):
+        default: {
+          return 'Rinkeby'
+        }
+      }
+    }
+
+    const networkButton = networkId === this.DEFAULT_NETWORK_ID ? (
       <div className="header_rinkeby" onClick={() => this.setUserInfo()}>
-        <p className="header_rinkeby_p">Rinkeby</p>
+        <p className="header_rinkeby_p">{getNetwork()}</p>
       </div>
     ) :  (
       <div className="header_not_connected" onClick={() => this.setUserInfo()}>
