@@ -12,3 +12,4 @@ client/node_modules/
 node_modules/*
 node_modules/
 .firebaserc
+.firebase/*
