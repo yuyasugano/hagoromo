@@ -28536,10 +28536,16 @@
       "links": {},
       "address": "0x9c84b6413D8A859EB071a5db5525262f72E443A6",
       "transactionHash": "0x70f369f842bc543c2ccfe847663b91c3cbff7067ee24f8e1a3b5f1874b23f1c9"
+    },
+    "137": {
+      "events": {},
+      "links": {},
+      "address": "0x0E30E8A64093758ee2000E1011a62D9bA29CB79D",
+      "transactionHash": "0x866bb060418e1b95f6d0f1d7619ee3bcdc320b0fba198f4ef693f1b8e340ccaa"
     }
   },
-  "schemaVersion": "3.3.4",
-  "updatedAt": "2021-05-21T09:20:50.082Z",
+  "schemaVersion": "3.4.1",
+  "updatedAt": "2021-05-28T23:03:51.919Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
@@ -28547,7 +28553,7 @@
       "fundRaising(uint256,uint256)": {
         "details": "Assure that the proposal has not ended and sender has enough funding rights",
         "params": {
-          "_funding": "Integer of the funding that the sender transfers",
+          "_funding": "Integer of the funding that the sender wants to transfer",
           "_propNonce": "Integer of the target proposal that has been ended"
         }
       },
@@ -28559,10 +28565,10 @@
       "initializeProposal(string,string,uint256,uint256)": {
         "details": "Initiates a proposal with canonical configured parameters at propNonce",
         "params": {
-          "_description": "String of description of the proposal",
-          "_duration": "Length of duration in seconds in addition to block.timestamp",
-          "_requiredFund": "Integer of the required funds for the proposal",
-          "_url": "String of the proposal url that explains the project"
+          "_description": "String of the description of the proposal that explains the project",
+          "_duration": "Length of duration in seconds in addition to the current block.timestamp",
+          "_requiredFund": "Integer of the required funds for the proposal in total",
+          "_url": "String of the proposal url that has information of the project"
         }
       },
       "isExpired(uint256)": {
@@ -28583,7 +28589,7 @@
       "requestFundingRights(uint256)": {
         "details": "Assumes that msg.sender has approved the app contract to spend on their behalf",
         "params": {
-          "_numTokens": "The number of funds tokens desired in exchange for ERC20 tokens"
+          "_numTokens": "The number of funds tokens desired in the contract for ERC20 tokens"
         }
       },
       "rescueTokens(uint256)": {
@@ -28596,15 +28602,15 @@
         "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
       },
       "withdrawFundingRights(uint256)": {
-        "details": "Assume that the contract itself has had enough eth to call transfer function",
+        "details": "Assume that the contract itself has had enough gas to call transfer function",
         "params": {
           "_numTokens": "The number of ERC20 tokens desired in the contract for ERC20 tokens"
         }
       },
       "withdrawTokens(uint256)": {
-        "details": "Assure that the proposal has ended and the funds reached the requirement",
+        "details": "Assure that the proposal has ended and the funds reached the requirement at least",
         "params": {
-          "_propNonce": "Integer of the target proposal that has been ended"
+          "_propNonce": "Integer of the target proposal number that has been ended"
         }
       }
     },
@@ -28617,7 +28623,7 @@
         "notice": "Transfer funds ERC20 tokens from the funding rights to the proposal"
       },
       "init(address)": {
-        "notice": "Initializer. This can only be called once."
+        "notice": "Initializer. This can only be called once to initialize a token."
       },
       "requestFundingRights(uint256)": {
         "notice": "TransferFrom _numTokens ERC20 tokens to the app contract, granting funds"
@@ -28626,7 +28632,7 @@
         "notice": "Withdraw funds ERC20 tokens from the proposal to the funding rights"
       },
       "withdrawFundingRights(uint256)": {
-        "notice": "Withdraw _numTokens ERC20 tokens from the app contract, revoking funds"
+        "notice": "Withdraw _numTokens ERC20 tokens from the app contract, removing funds"
       },
       "withdrawTokens(uint256)": {
         "notice": "Withdraw funded ERC20 tokens from the contract if the proposal has ended"
