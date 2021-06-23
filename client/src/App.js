@@ -54,8 +54,8 @@ class App extends Component {
     this.RINKEBY_NETWORK_ID = 4;
     this.MATIC_NETWORK_ID = 137;
     // configure default network id when you deploy the code
-    // this.DEFAULT_NETWORK_ID = this.MATIC_NETWORK_ID;
-    this.DEFAULT_NETWORK_ID = this.RINKEBY_NETWORK_ID;
+    this.DEFAULT_NETWORK_ID = this.MATIC_NETWORK_ID;
+    // this.DEFAULT_NETWORK_ID = this.RINKEBY_NETWORK_ID;
 
     let web3;
     try {
@@ -506,8 +506,12 @@ class App extends Component {
                       </tr>
                       <tr>
                         <th>Webサイト</th>
-                        <td><a href={web3.utils.hexToUtf8(prop['1'])} target="_blank"
-                          rel="noopener noreferrer">{ web3.utils.hexToUtf8(prop['1']) }</a></td>
+                        <td>
+                          { prop['1'] !== null &&
+                          <a href={web3.utils.hexToUtf8(prop['1'])} target="_blank"
+                          rel="noopener noreferrer">{ web3.utils.hexToUtf8(prop['1']) }</a>
+                          }
+                        </td>
                       </tr>
                       <tr>
                         <th>資金引き出し</th>
