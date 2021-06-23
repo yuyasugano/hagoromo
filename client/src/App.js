@@ -385,6 +385,7 @@ class App extends Component {
           </h1>
           <h2 className="title_h2">Welcome to Hagoromo Funding!</h2>
           <p className="title_p">1 JPYC = 1円で使用できる JPYC を使用したクラウドファンディングサイトです。<br /> 分散型で誰でもプロジェクトの作成や、プロジェクトへのファンディングが行えます。</p>
+          <p className="title_s">Connect Walletをクリックして支援プロジェクトを表示しましょう</p>
         </section>
 
         <section className="section_deposit">
