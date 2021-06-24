@@ -30,7 +30,9 @@ It is deployed at the address [0x0E30E8A64093758ee2000E1011a62D9bA29CB79D][hagor
  
 ## Use of JPYC Polygon
  
-`JPYC` in Polygon(Matic) is a ERC-20 based contract that was deployed at the address[0x6AE7Dfc73E0dDE2aa99ac063DcF7e8A63265108c][jpycm]. To buy JPYC in Polygon(Matic), visit https://jpyc.jp/
+`JPYC` in Polygon(Matic) is a ERC-20 based contract that was deployed at the address [0x6AE7Dfc73E0dDE2aa99ac063DcF7e8A63265108c][jpycm]. 
+
+To buy JPYC in Polygon(Matic), visit https://jpyc.jp/
  
 ## Testing
   
