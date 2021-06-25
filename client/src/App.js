@@ -375,7 +375,7 @@ class App extends Component {
           </div>
           <div className="header_right">
             {networkButton}
-            <a className="header_help" href="https://yuyasugano.medium.com/%E3%81%AF%E3%81%94%E3%82%8D%E3%82%82%E3%83%95%E3%82%A1%E3%83%B3%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0-rinkeby-%E5%88%86%E6%95%A3%E5%9E%8B%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%89%E3%83%95%E3%82%A1%E3%83%B3%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0-25bb82ca6de8" target="_blank" rel="noopener noreferrer">はごろもの使い方</a>
+            <a className="header_help" href="https://yuyasugano.medium.com/%E3%81%AF%E3%81%94%E3%82%8D%E3%82%82%E3%83%95%E3%82%A1%E3%83%B3%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0-matic%E3%83%A1%E3%82%A4%E3%83%B3%E3%83%8D%E3%83%83%E3%83%88-%E5%88%86%E6%95%A3%E5%9E%8B%E3%82%AF%E3%83%A9%E3%82%A6%E3%83%89%E3%83%95%E3%82%A1%E3%83%B3%E3%83%87%E3%82%A3%E3%83%B3%E3%82%B0-fa4f1ac310" target="_blank" rel="noopener noreferrer">はごろもの使い方</a>
           </div>
         </header>
 
