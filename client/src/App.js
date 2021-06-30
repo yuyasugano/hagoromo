@@ -308,7 +308,8 @@ class App extends Component {
     // console.log(allowed);
 
     const arr = [];
-    for (let i=1; i<=nonce; ++i) {
+    // for (let i=1; i<=nonce; ++i) {
+    for (let i=nonce; i>=1; --i) {
       const res = await contract.methods.getProposal(i).call();
       arr.push(res);
     }
@@ -385,7 +386,9 @@ class App extends Component {
           </h1>
           <h2 className="title_h2">Welcome to Hagoromo Funding!</h2>
           <p className="title_p">1 JPYC = 1円で使用できる JPYC を使用したクラウドファンディングサイトです。<br /> 分散型で誰でもプロジェクトの作成や、プロジェクトへのファンディングが行えます。</p>
-          <p className="title_s">Connect Walletをクリックして支援プロジェクトを表示しましょう</p>
+          <p className="title_s">
+            Connect Walletをクリックして支援プロジェクトを表示しましょう<br />Use the service at your own risk until the code audit.
+          </p>
         </section>
 
         <section className="section_deposit">
@@ -527,7 +530,7 @@ class App extends Component {
                         <input type="number" className="input_main no-spin" placeholder="100000" onChange={(e) => this.setState({ jpyc: e.target.value })} />
                             <span className="input_unit">JPYC</span>
                         </div>
-                        <button className="button_main" onClick={() => {this.addFund(index+1)}}>支援する</button>
+                        <button className="button_main" onClick={() => {this.addFund(this.state.propNonce-index)}}>支援する</button>
                     </div>
                   </div>
                   }
